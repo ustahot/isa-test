@@ -6,6 +6,9 @@ use App\Models\Product;
 
 class FilterProductUseCase
 {
+
+    private const PAGE_SIZE = 2;
+
     public function __construct(readonly private array $validated)
     {
     }
@@ -38,19 +41,23 @@ class FilterProductUseCase
         if (isset($this->validated['sort'])) {
             switch ($this->validated['sort']) {
                 case 'price_asc':
-                    $query = $query->orderBy('price');
+                    $query = $query->orderByRaw('price, id');
+//                    $query = $query->orderBy('price');
                     break;
                 case 'price_desc':
-                    $query = $query->orderBy('price', 'desc');
+                    $query = $query->orderByRaw('price, id desc');
                     break;
                 case 'rating_desc':
-                    $query = $query->orderBy('rating', 'desc');
+                    $query = $query->orderByRaw('rating, id desc');
                     break;
                 case 'newest':
-                    $query = $query->orderBy('created_at', 'desc');
+                    $query = $query->orderByRaw('created_at, id desc');
             }
+            // При любой сортировке не по id или по иному уникальному полю, 
+            // использовать курсорную пагинацию от Laravel не получится
+            $query = $query->simplePaginate(self::PAGE_SIZE);
         } else {
-            $query = $query->orderBy('id');
+            $query = $query->orderBy('id')->cursorPaginate(self::PAGE_SIZE);
         }
 
         return $query;

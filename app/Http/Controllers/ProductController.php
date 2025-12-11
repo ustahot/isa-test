@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Api\Product\FilterRequest;
 use App\Models\Product;
 use App\UseCases\FilterProductUseCase;
+use Illuminate\Database\Eloquent\Collection;
 use Mockery\Exception;
 
 
@@ -17,11 +18,12 @@ class ProductController extends Controller
      */
     public function index(FilterRequest $request)
     {
+
         try {
             $validated = $request->validated();
             $result = (new FilterProductUseCase($validated))->do();
 
-            return response()->json($result->cursorPaginate(5), 200);
+            return response()->json($result, 200);
 
         } catch (Exception $exception) {
             return response($exception->getMessage(), $exception->getCode());
