@@ -38,28 +38,23 @@ class FilterProductUseCase
             $query = $query->whereLike('name', '%' . $this->validated['q'] . '%');
         }
 
-        if (isset($this->validated['sort'])) {
+        if (isset($this->validated['sort']) || isset($this->validated['page'])) {
             switch ($this->validated['sort']) {
                 case 'price_asc':
-                    $query = $query->orderByRaw('price, id');
-//                    $query = $query->orderBy('price');
+                    $query = $query->orderBy('price');
                     break;
                 case 'price_desc':
-                    $query = $query->orderByRaw('price, id desc');
+                    $query = $query->orderByDesc('price');
                     break;
                 case 'rating_desc':
-                    $query = $query->orderByRaw('rating, id desc');
+                    $query = $query->orderByDesc('rating');
                     break;
                 case 'newest':
-                    $query = $query->orderByRaw('created_at, id desc');
+                    $query = $query->orderByDesc('created_at');
+                    break;
             }
-            // При любой сортировке не по id или по иному уникальному полю, 
-            // использовать курсорную пагинацию от Laravel не получится
-            $query = $query->simplePaginate(self::PAGE_SIZE);
-        } else {
-            $query = $query->orderBy('id')->cursorPaginate(self::PAGE_SIZE);
         }
 
-        return $query;
+        return $query->get();
     }
 }
