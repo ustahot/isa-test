@@ -4,18 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Api\Product\FilterRequest;
 use App\Models\Product;
-use UseCases\FilterProductUseCase;
+use App\UseCases\FilterProductUseCase;
+use Mockery\Exception;
 
 
 class ProductController extends Controller
 {
-    public function index()
+    /**
+     * @param FilterRequest $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     * @throws \Exception
+     */
+    public function index(FilterRequest $request)
     {
-        return Product::all();
+        try {
+            $validated = $request->validated();
+            $result = (new FilterProductUseCase($validated))->do();
+
+            return response()->json($result->cursorPaginate(5), 200);
+
+        } catch (Exception $exception) {
+            return response($exception->getMessage(), $exception->getCode());
+        }
+
     }
 
-    public function filter(FilterRequest $request)
-    {
-        return (new FilterProductUseCase($request->validated()))->do();
-    }
 }
