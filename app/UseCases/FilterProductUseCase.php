@@ -38,10 +38,11 @@ class FilterProductUseCase
             $query = $query->whereLike('name', '%' . $this->validated['q'] . '%');
         }
 
-        if (isset($this->validated['sort']) || isset($this->validated['page'])) {
+        if (isset($this->validated['sort'])) {
             switch ($this->validated['sort']) {
                 case 'price_asc':
                     $query = $query->orderBy('price');
+//                    $query = $query->orderBy('price')->chunk(self::PAGE_SIZE, function ($chunk) {});
                     break;
                 case 'price_desc':
                     $query = $query->orderByDesc('price');
@@ -55,6 +56,7 @@ class FilterProductUseCase
             }
         }
 
-        return $query->get();
+        return $query->paginate(self::PAGE_SIZE)->withQueryString();
+//        return $query->get();
     }
 }
